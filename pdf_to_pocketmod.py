@@ -176,6 +176,7 @@ if __name__ == "__main__":
         type=str,
         default="top",
         help="The layout of the PocketMod PDF. Default pages folds in 'top'.",
+        choices=["top", "bottom"],
     )
 
     # Parse the arguments provided by the user
