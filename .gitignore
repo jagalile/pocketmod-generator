@@ -208,3 +208,6 @@ __marimo__/
 
 # Mise (https://mise.jdx.dev/)
 mise.toml
+
+# Ignore all PDF files
+*.pdf
