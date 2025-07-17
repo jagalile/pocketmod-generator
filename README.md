@@ -7,7 +7,7 @@ A PocketMod is a small, foldable booklet made from a single sheet of paper, fold
 
 ## Features
 - Takes an 8-page A4 PDF and outputs a single-page A4 PDF in PocketMod layout
-- Supports two layout options: `bottom` (default) and `top` (for double-sided printing)
+- Supports two layout options: `top` (default, folds on top) and `bottom` (folds on bottom)
 - Uses [PyMuPDF](https://pymupdf.readthedocs.io/) for high-quality PDF manipulation
 
 ## Requirements
@@ -29,7 +29,7 @@ python pdf_to_pocketmod.py <input_file.pdf> [-l bottom|top]
 ```
 
 - `<input_file.pdf>`: Path to your 8-page A4 PDF file
-- `-l, --layout`: (Optional) Layout for the PocketMod PDF. Use `bottom` for open pages facing down (default), or `top` for open pages facing up (for duplex printing).
+- `-l, --layout`: (Optional) Layout for the PocketMod PDF. Use `top` for pages folds on top (default), or `bottom` for open pages folds on bottom.
 
 ### Example
 

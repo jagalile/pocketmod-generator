@@ -21,30 +21,30 @@ A4_LANDSCAPE_SIZE = pymupdf.paper_size("a4-l")
 # Defines the position, source page index, and rotation for each of the 8 panels.
 # The structure is based on a detailed analysis of the PocketMod folding process.
 # Reference: Table 1 of the technical report.
-POCKETMOD_LAYOUT_BOTTOM = [
+POCKETMOD_LAYOUT_TOP = [
     # Upper row (panels are placed upside down)
-    {"source_page_index": 5, "rotation": 180, "grid_pos": (0, 0)},
-    {"source_page_index": 6, "rotation": 180, "grid_pos": (0, 1)},
-    {"source_page_index": 7, "rotation": 180, "grid_pos": (0, 2)},  # Back cover
-    {"source_page_index": 0, "rotation": 180, "grid_pos": (0, 3)},  # Front cover
+    {"source_page_index": 0, "rotation": 180, "grid_pos": (0, 0)},
+    {"source_page_index": 7, "rotation": 180, "grid_pos": (0, 1)},
+    {"source_page_index": 6, "rotation": 180, "grid_pos": (0, 2)},  # Back cover
+    {"source_page_index": 5, "rotation": 180, "grid_pos": (0, 3)},  # Front cover
     # Lower row (panels are placed in normal orientation)
-    {"source_page_index": 4, "rotation": 0, "grid_pos": (1, 0)},
-    {"source_page_index": 3, "rotation": 0, "grid_pos": (1, 1)},
-    {"source_page_index": 2, "rotation": 0, "grid_pos": (1, 2)},
-    {"source_page_index": 1, "rotation": 0, "grid_pos": (1, 3)},
+    {"source_page_index": 1, "rotation": 0, "grid_pos": (1, 0)},
+    {"source_page_index": 2, "rotation": 0, "grid_pos": (1, 1)},
+    {"source_page_index": 3, "rotation": 0, "grid_pos": (1, 2)},
+    {"source_page_index": 4, "rotation": 0, "grid_pos": (1, 3)},
 ]
 
-POCKETMOD_LAYOUT_TOP = [
+POCKETMOD_LAYOUT_BOTTOM = [
     # Upper row (panels are placed in normal orientation)
-    {"source_page_index": 5, "rotation": 0, "grid_pos": (0, 0)},
-    {"source_page_index": 6, "rotation": 0, "grid_pos": (0, 1)},
-    {"source_page_index": 7, "rotation": 0, "grid_pos": (0, 2)},  # Back cover
-    {"source_page_index": 0, "rotation": 0, "grid_pos": (0, 3)},  # Front cover
+    {"source_page_index": 7, "rotation": 0, "grid_pos": (0, 0)},
+    {"source_page_index": 0, "rotation": 0, "grid_pos": (0, 1)},
+    {"source_page_index": 1, "rotation": 0, "grid_pos": (0, 2)},  # Back cover
+    {"source_page_index": 2, "rotation": 0, "grid_pos": (0, 3)},  # Front cover
     # Lower row (panels are placed upside down)
-    {"source_page_index": 4, "rotation": 180, "grid_pos": (1, 0)},
-    {"source_page_index": 3, "rotation": 180, "grid_pos": (1, 1)},
-    {"source_page_index": 2, "rotation": 180, "grid_pos": (1, 2)},
-    {"source_page_index": 1, "rotation": 180, "grid_pos": (1, 3)},
+    {"source_page_index": 6, "rotation": 180, "grid_pos": (1, 0)},
+    {"source_page_index": 5, "rotation": 180, "grid_pos": (1, 1)},
+    {"source_page_index": 4, "rotation": 180, "grid_pos": (1, 2)},
+    {"source_page_index": 3, "rotation": 180, "grid_pos": (1, 3)},
 ]
 
 # --- HELPER FUNCTIONS ---
@@ -174,8 +174,8 @@ if __name__ == "__main__":
         "-l",
         "--layout",
         type=str,
-        default="bottom",
-        help="The layout of the PocketMod PDF. Default is open pages in 'bottom'.",
+        default="top",
+        help="The layout of the PocketMod PDF. Default pages folds in 'top'.",
     )
 
     # Parse the arguments provided by the user
