@@ -74,10 +74,10 @@ def calculate_target_rect(
 # --- MAIN FUNCTION ---
 
 
-def create_pocketmod_pdf(input_path: str, layout: str) -> None:
+def create_pocketmod_pdf(input_path: str, layout: str, repeat: bool = False) -> None:
     """
-    Main function that reads an 8-page PDF and creates a single-page PDF
-    in PocketMod format.
+    Main function that reads an 8-page PDF (or a 1-page PDF with --repeat)
+    and creates a single-page PDF in PocketMod format.
     """
     try:
         # Open the source PDF document
@@ -87,14 +87,23 @@ def create_pocketmod_pdf(input_path: str, layout: str) -> None:
         print(f"Detail: {e}")
         sys.exit(1)
 
-    # Validation: Ensure the source document has exactly 8 pages.
-    if len(source_doc) != 8:
-        print(
-            f"Error: Input file must have exactly 8 pages. "
-            f"The provided file has {len(source_doc)} pages."
-        )
-        source_doc.close()
-        sys.exit(1)
+    # Validation: Ensure the source document has the correct number of pages.
+    if repeat:
+        if len(source_doc) != 1:
+            print(
+                f"Error: With --repeat/-r, the input file must have exactly 1 page. "
+                f"The provided file has {len(source_doc)} pages."
+            )
+            source_doc.close()
+            sys.exit(1)
+    else:
+        if len(source_doc) != 8:
+            print(
+                f"Error: Input file must have exactly 8 pages. "
+                f"The provided file has {len(source_doc)} pages."
+            )
+            source_doc.close()
+            sys.exit(1)
 
     print("Input file validated. Creating PocketMod PDF...")
 
@@ -121,7 +130,10 @@ def create_pocketmod_pdf(input_path: str, layout: str) -> None:
     # Iterate through the imposition map to place each page
     for panel_info in pocketmod_layout:
         # Get the information for the current panel
-        source_page_idx = panel_info["source_page_index"]
+        if repeat:
+            source_page_idx = 0
+        else:
+            source_page_idx = panel_info["source_page_index"]
         rotation = panel_info["rotation"]
         grid_pos = panel_info["grid_pos"]
 
@@ -132,14 +144,18 @@ def create_pocketmod_pdf(input_path: str, layout: str) -> None:
             grid_pos=grid_pos,
         )
 
-        # Use show_pdf_page to place the source page in the target rectangle.
-        # This function is the core of the operation. It treats the source page as a
-        # vector object, preserving quality and allowing for precise transformations.
+        # Calcula el rectángulo de la página fuente (toda la página)
+        src_page = source_doc[source_page_idx]
+        src_rect = src_page.rect
+
+        # Coloca la página fuente escalada exactamente a la celda destino
         output_page.show_pdf_page(
-            target_rect,  # Where to place the page
-            source_doc,  # From which document to take the page
-            source_page_idx,  # Which page number to take
-            rotate=rotation,  # With what rotation to display it
+            target_rect,
+            source_doc,
+            source_page_idx,
+            rotate=rotation,
+            clip=src_rect,
+            keep_proportion=False
         )
 
     # Save the output document to the specified path
@@ -179,8 +195,16 @@ if __name__ == "__main__":
         choices=["top", "bottom"],
     )
 
+    # Add the optional argument for repeat mode
+    parser.add_argument(
+        "-r",
+        "--repeat",
+        action="store_true",
+        help="Use a single-page PDF and repeat it 8 times to fill the PocketMod."
+    )
+
     # Parse the arguments provided by the user
     args = parser.parse_args()
 
     # Call the main function with the parsed arguments
-    create_pocketmod_pdf(input_path=args.input_file, layout=args.layout)
+    create_pocketmod_pdf(input_path=args.input_file, layout=args.layout, repeat=args.repeat)
