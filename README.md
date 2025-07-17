@@ -14,6 +14,14 @@ A PocketMod is a small, foldable booklet made from a single sheet of paper, fold
 - Python 3.7+
 - [PyMuPDF](https://pymupdf.readthedocs.io/) (install with `pip install pymupdf`)
 
+### Installation
+
+Install all required dependencies using pip:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Usage
 
 ```bash
