@@ -12,6 +12,9 @@ import pymupdf
 
 # --- CONSTANTS AND CONFIGURATION ---
 
+# 1 point = 1/72 inch. 1 inch = 25.4 mm.
+MM_TO_POINTS = 72 / 25.4
+
 # Get the dimensions of an A4 sheet in landscape orientation.
 # PyMuPDF's coordinate system has its origin (0,0) at the top-left corner.
 # paper_size returns a tuple (width, height).
@@ -49,17 +52,29 @@ POCKETMOD_LAYOUT_BOTTOM = [
 
 # --- HELPER FUNCTIONS ---
 
+def margin_mm_to_points(m_top: int = 0, m_bottom: int = 0, m_left: int = 0, m_right: int = 0) -> dict:
+    """
+    Converts a margin from millimeters to points.
+    1 mm = 2.83465 points.
+    """
+    return {
+        "top": m_top * MM_TO_POINTS,
+        "bottom": m_bottom * MM_TO_POINTS,
+        "left": m_left * MM_TO_POINTS,
+        "right": m_right * MM_TO_POINTS,
+    }
+
 
 def calculate_target_rect(
-    page_width: float, page_height: float, grid_pos: tuple
+    safe_area: pymupdf.Rect, grid_pos: tuple
 ) -> pymupdf.Rect:
     """
     Calculates the destination rectangle (pymupdf.Rect) for a specific panel
     on the 4x2 grid of the output page.
     """
     rows, cols = 2, 4
-    cell_width = page_width / cols
-    cell_height = page_height / rows
+    cell_width = safe_area.width / cols
+    cell_height = safe_area.height / rows
 
     row, col = grid_pos
 
@@ -74,10 +89,10 @@ def calculate_target_rect(
 # --- MAIN FUNCTION ---
 
 
-def create_pocketmod_pdf(input_path: str, layout: str, repeat: bool = False) -> None:
+def create_pocketmod_pdf(input_path: str, layout: str, margins: dict, repeat: bool = False) -> None:
     """
     Main function that reads an 8-page PDF (or a 1-page PDF with --repeat)
-    and creates a single-page PDF in PocketMod format.
+    and creates a single-page PDF in PocketMod format, scaled to fit within the specified margins.
     """
     try:
         # Open the source PDF document
@@ -114,6 +129,13 @@ def create_pocketmod_pdf(input_path: str, layout: str, repeat: bool = False) -> 
     output_page = output_doc.new_page(
         width=A4_LANDSCAPE_SIZE[0], height=A4_LANDSCAPE_SIZE[1]
     )
+    page_rect = output_page.rect
+    safe_area = pymupdf.Rect(
+        page_rect.x0 + margins['left'],
+        page_rect.y0 + margins['top'],
+        page_rect.x1 - margins['right'],
+        page_rect.y1 - margins['bottom']
+    )
 
     if layout not in ["bottom", "top"]:
         print(
@@ -134,6 +156,7 @@ def create_pocketmod_pdf(input_path: str, layout: str, repeat: bool = False) -> 
             source_page_idx = 0
         else:
             source_page_idx = panel_info["source_page_index"]
+        """
         rotation = panel_info["rotation"]
         grid_pos = panel_info["grid_pos"]
 
@@ -147,6 +170,7 @@ def create_pocketmod_pdf(input_path: str, layout: str, repeat: bool = False) -> 
         # Calcula el rectángulo de la página fuente (toda la página)
         src_page = source_doc[source_page_idx]
         src_rect = src_page.rect
+        
 
         # Coloca la página fuente escalada exactamente a la celda destino
         output_page.show_pdf_page(
@@ -156,6 +180,20 @@ def create_pocketmod_pdf(input_path: str, layout: str, repeat: bool = False) -> 
             rotate=rotation,
             clip=src_rect,
             keep_proportion=False
+        )
+        """
+        print(panel_info["grid_pos"])
+
+        target_rect = calculate_target_rect(
+            safe_area,
+            grid_pos=panel_info['grid_pos']
+        )
+
+        output_page.show_pdf_page(
+            target_rect,
+            source_doc,
+            panel_info['source_page_index'],
+            rotate=panel_info['rotation']
         )
 
     # Save the output document to the specified path
@@ -203,8 +241,45 @@ if __name__ == "__main__":
         help="Use a single-page PDF and repeat it 8 times to fill the PocketMod."
     )
 
+    # Add the optional margins
+    parser.add_argument(
+        "-mt",
+        "--top",
+        type=int,
+        default=0,
+        help="Set the top margin for the output PDF. Default is 0 (no margins)."
+    )
+    parser.add_argument(
+        "-mb",
+        "--bottom",
+        type=int,
+        default=0,
+        help="Set the bottom margin for the output PDF. Default is 0 (no margins)."
+    )
+    parser.add_argument(
+        "-ml",
+        "--left",
+        type=int,
+        default=0,
+        help="Set the left margin for the output PDF. Default is 0 (no margins)."
+    )
+    parser.add_argument(
+        "-mr",
+        "--right",
+        type=int,
+        default=0,
+        help="Set the right margin for the output PDF. Default is 0 (no margins)."
+    )
+
     # Parse the arguments provided by the user
     args = parser.parse_args()
 
+    margins_in_points = margin_mm_to_points(
+        m_top=args.top,
+        m_bottom=args.bottom,
+        m_left=args.left,
+        m_right=args.right
+    )
+
     # Call the main function with the parsed arguments
-    create_pocketmod_pdf(input_path=args.input_file, layout=args.layout, repeat=args.repeat)
+    create_pocketmod_pdf(input_path=args.input_file, layout=args.layout, margins=margins_in_points, repeat=args.repeat)
